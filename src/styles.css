@@ -130,8 +130,6 @@
   font-size: 0.875rem;
   outline: none;
   transition: border-color 0.15s, box-shadow 0.15s;
-}
-@utility input {
   &:focus {
     border-color: var(--color-ring);
     box-shadow: 0 0 0 3px color-mix(in oklab, var(--color-ring) 25%, transparent);
