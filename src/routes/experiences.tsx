@@ -601,9 +601,9 @@ function Experiences() {
           <h2 className="max-w-2xl font-display text-4xl text-primary-foreground md:text-5xl">
             Ready to make one of these — or something we haven't built yet?
           </h2>
-          <Link to="/contact" className="mt-8 inline-flex items-center gap-2 rounded-full bg-background px-6 py-3 text-sm font-medium text-foreground hover:bg-background/90">
+          <a href="#inquiry" className="mt-8 inline-flex items-center gap-2 rounded-full bg-background px-6 py-3 text-sm font-medium text-foreground hover:bg-background/90">
             Start your event <ArrowRight className="h-4 w-4" />
-          </Link>
+          </a>
         </div>
       </section>
     </>
