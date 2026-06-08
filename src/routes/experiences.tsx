@@ -585,6 +585,16 @@ function Experiences() {
         </div>
       </section>
 
+      {/* Inquiry form */}
+      <section id="inquiry" className="mx-auto max-w-5xl px-6 pb-24 pt-4 scroll-mt-24">
+        <div className="mb-10 max-w-2xl">
+          <p className="text-xs uppercase tracking-[0.25em] text-muted-foreground">Begin</p>
+          <h2 className="mt-2 font-display text-4xl md:text-5xl">Tell us about your event.</h2>
+          <p className="mt-3 text-foreground/70">A few details so we can prepare a thoughtful, specific reply — not a template.</p>
+        </div>
+        <InquiryForm />
+      </section>
+
       {/* CTA */}
       <section className="mx-auto max-w-7xl px-6 pb-24">
         <div className="overflow-hidden rounded-3xl bg-gradient-sunset p-10 md:p-16">
