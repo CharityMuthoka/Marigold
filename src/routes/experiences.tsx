@@ -272,6 +272,218 @@ const touches = [
   "Vendor tip envelopes pre-stuffed and delivered for you",
 ];
 
+// ---------- Inquiry Form ----------
+type InquiryData = {
+  name: string;
+  email: string;
+  phone: string;
+  eventDate: string;
+  flexibleDate: boolean;
+  guestCount: string;
+  budget: string;
+  eventType: string;
+  style: string[];
+  location: string;
+  vision: string;
+};
+
+const initialInquiry: InquiryData = {
+  name: "", email: "", phone: "", eventDate: "", flexibleDate: false,
+  guestCount: "", budget: "", eventType: "", style: [], location: "", vision: "",
+};
+
+const eventTypes = ["Wedding", "Corporate", "Private celebration", "Launch / brand", "Destination", "Other"];
+const budgets = ["Under $25k", "$25k – $50k", "$50k – $100k", "$100k – $250k", "$250k+"];
+const guestRanges = ["Under 25", "25 – 75", "75 – 150", "150 – 300", "300+"];
+const styles = [
+  "Golden Hour Garden", "Velvet Loft Gala", "Desert Dusk Dinner",
+  "Black-tie classic", "Editorial minimal", "Bohemian organic", "Modern industrial", "Not sure yet",
+];
+
+function InquiryForm() {
+  const [data, setData] = useState<InquiryData>(initialInquiry);
+  const [errors, setErrors] = useState<Partial<Record<keyof InquiryData, string>>>({});
+  const [submitting, setSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+
+  const update = <K extends keyof InquiryData>(k: K, v: InquiryData[K]) => {
+    setData((d) => ({ ...d, [k]: v }));
+    if (errors[k]) setErrors((e) => ({ ...e, [k]: undefined }));
+  };
+
+  const toggleStyle = (s: string) => {
+    update("style", data.style.includes(s) ? data.style.filter((x) => x !== s) : [...data.style, s]);
+  };
+
+  const validate = () => {
+    const e: Partial<Record<keyof InquiryData, string>> = {};
+    if (!data.name.trim()) e.name = "Your name is required";
+    else if (data.name.length > 100) e.name = "Keep it under 100 characters";
+    if (!data.email.trim()) e.email = "Email is required";
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) e.email = "Enter a valid email";
+    if (data.phone && data.phone.length > 30) e.phone = "Phone seems too long";
+    if (!data.eventDate && !data.flexibleDate) e.eventDate = "Pick a date or mark flexible";
+    if (!data.guestCount) e.guestCount = "Choose a guest range";
+    if (!data.budget) e.budget = "Choose a budget range";
+    if (!data.eventType) e.eventType = "Pick an event type";
+    if (data.vision.length > 2000) e.vision = "Keep it under 2000 characters";
+    setErrors(e);
+    return Object.keys(e).length === 0;
+  };
+
+  const handleSubmit = async (ev: React.FormEvent) => {
+    ev.preventDefault();
+    if (!validate()) return;
+    setSubmitting(true);
+    // Simulate submission — wire to backend later
+    await new Promise((r) => setTimeout(r, 700));
+    setSubmitting(false);
+    setSubmitted(true);
+  };
+
+  if (submitted) {
+    return (
+      <div className="rounded-3xl border border-border bg-card p-10 text-center shadow-soft md:p-16">
+        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-gradient-sunset shadow-glow">
+          <CheckCircle2 className="h-8 w-8 text-primary-foreground" />
+        </div>
+        <h3 className="mt-6 font-display text-4xl">Thank you, {data.name.split(" ")[0]}.</h3>
+        <p className="mt-3 text-foreground/70">
+          Your inquiry is in. A planner will reply within one business day with next steps and a preliminary vision deck.
+        </p>
+        <button
+          onClick={() => { setData(initialInquiry); setSubmitted(false); }}
+          className="mt-8 rounded-full border border-border bg-background px-5 py-2.5 text-sm font-medium hover:bg-muted"
+        >
+          Submit another inquiry
+        </button>
+      </div>
+    );
+  }
+
+  const labelCls = "flex items-center gap-2 text-xs uppercase tracking-[0.18em] text-muted-foreground";
+  const inputCls = "mt-2 w-full rounded-xl border border-border bg-background px-4 py-3 text-sm placeholder:text-muted-foreground/60 focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/30";
+  const errCls = "mt-1.5 text-xs text-destructive";
+  const chip = (active: boolean) =>
+    `rounded-full border px-4 py-2 text-sm transition-all ${
+      active ? "border-accent bg-gradient-sunset text-primary-foreground shadow-glow" : "border-border bg-background hover:bg-muted"
+    }`;
+
+  return (
+    <form onSubmit={handleSubmit} className="rounded-3xl border border-border bg-card p-8 shadow-soft md:p-12">
+      {/* Contact */}
+      <fieldset>
+        <legend className="font-display text-2xl">Tell us who you are</legend>
+        <div className="mt-6 grid gap-5 md:grid-cols-2">
+          <div>
+            <label className={labelCls}><User className="h-3.5 w-3.5" /> Full name</label>
+            <input className={inputCls} value={data.name} maxLength={100}
+              onChange={(e) => update("name", e.target.value)} placeholder="Your name" />
+            {errors.name && <p className={errCls}>{errors.name}</p>}
+          </div>
+          <div>
+            <label className={labelCls}><Mail className="h-3.5 w-3.5" /> Email</label>
+            <input className={inputCls} type="email" value={data.email} maxLength={255}
+              onChange={(e) => update("email", e.target.value)} placeholder="you@email.com" />
+            {errors.email && <p className={errCls}>{errors.email}</p>}
+          </div>
+          <div>
+            <label className={labelCls}><Phone className="h-3.5 w-3.5" /> Phone <span className="lowercase tracking-normal opacity-60">(optional)</span></label>
+            <input className={inputCls} type="tel" value={data.phone} maxLength={30}
+              onChange={(e) => update("phone", e.target.value)} placeholder="+1 555 000 0000" />
+            {errors.phone && <p className={errCls}>{errors.phone}</p>}
+          </div>
+          <div>
+            <label className={labelCls}><MapPin className="h-3.5 w-3.5" /> City / venue <span className="lowercase tracking-normal opacity-60">(optional)</span></label>
+            <input className={inputCls} value={data.location} maxLength={200}
+              onChange={(e) => update("location", e.target.value)} placeholder="Where is this happening?" />
+          </div>
+        </div>
+      </fieldset>
+
+      {/* Event */}
+      <fieldset className="mt-12">
+        <legend className="font-display text-2xl">The event</legend>
+        <div className="mt-6 grid gap-5 md:grid-cols-2">
+          <div>
+            <label className={labelCls}><Calendar className="h-3.5 w-3.5" /> Event date</label>
+            <input className={inputCls} type="date" value={data.eventDate}
+              disabled={data.flexibleDate}
+              onChange={(e) => update("eventDate", e.target.value)} />
+            <label className="mt-2 inline-flex items-center gap-2 text-xs text-muted-foreground">
+              <input type="checkbox" checked={data.flexibleDate}
+                onChange={(e) => update("flexibleDate", e.target.checked)} />
+              My date is flexible
+            </label>
+            {errors.eventDate && <p className={errCls}>{errors.eventDate}</p>}
+          </div>
+          <div>
+            <label className={labelCls}><Sparkles className="h-3.5 w-3.5" /> Event type</label>
+            <div className="mt-2 flex flex-wrap gap-2">
+              {eventTypes.map((t) => (
+                <button type="button" key={t} onClick={() => update("eventType", t)} className={chip(data.eventType === t)}>{t}</button>
+              ))}
+            </div>
+            {errors.eventType && <p className={errCls}>{errors.eventType}</p>}
+          </div>
+          <div>
+            <label className={labelCls}><Users className="h-3.5 w-3.5" /> Guest count</label>
+            <div className="mt-2 flex flex-wrap gap-2">
+              {guestRanges.map((g) => (
+                <button type="button" key={g} onClick={() => update("guestCount", g)} className={chip(data.guestCount === g)}>{g}</button>
+              ))}
+            </div>
+            {errors.guestCount && <p className={errCls}>{errors.guestCount}</p>}
+          </div>
+          <div>
+            <label className={labelCls}><DollarSign className="h-3.5 w-3.5" /> Investment range</label>
+            <div className="mt-2 flex flex-wrap gap-2">
+              {budgets.map((b) => (
+                <button type="button" key={b} onClick={() => update("budget", b)} className={chip(data.budget === b)}>{b}</button>
+              ))}
+            </div>
+            {errors.budget && <p className={errCls}>{errors.budget}</p>}
+          </div>
+        </div>
+      </fieldset>
+
+      {/* Style */}
+      <fieldset className="mt-12">
+        <legend className="font-display text-2xl">The style</legend>
+        <p className="mt-1 text-sm text-muted-foreground">Pick any that resonate. You can choose more than one.</p>
+        <div className="mt-4 flex flex-wrap gap-2">
+          {styles.map((s) => (
+            <button type="button" key={s} onClick={() => toggleStyle(s)} className={chip(data.style.includes(s))}>
+              <Palette className="mr-1.5 inline h-3.5 w-3.5" />{s}
+            </button>
+          ))}
+        </div>
+      </fieldset>
+
+      {/* Vision */}
+      <fieldset className="mt-12">
+        <legend className="font-display text-2xl">Your vision <span className="text-sm font-normal text-muted-foreground">(optional)</span></legend>
+        <label className={`${labelCls} mt-4`}><MessageSquare className="h-3.5 w-3.5" /> What should we know?</label>
+        <textarea className={`${inputCls} min-h-[140px] resize-y`} value={data.vision} maxLength={2000}
+          onChange={(e) => update("vision", e.target.value)}
+          placeholder="A favorite memory, a non-negotiable, a song that has to play at midnight…" />
+        <div className="mt-1.5 flex justify-between text-xs text-muted-foreground">
+          {errors.vision ? <span className="text-destructive">{errors.vision}</span> : <span />}
+          <span>{data.vision.length} / 2000</span>
+        </div>
+      </fieldset>
+
+      <div className="mt-10 flex flex-col items-start justify-between gap-4 border-t border-border pt-8 md:flex-row md:items-center">
+        <p className="text-xs text-muted-foreground">We reply within one business day. Inquiries are confidential.</p>
+        <button type="submit" disabled={submitting}
+          className="inline-flex items-center gap-2 rounded-full bg-gradient-sunset px-7 py-3.5 text-sm font-medium text-primary-foreground shadow-glow transition-opacity disabled:opacity-60">
+          {submitting ? "Sending…" : "Send inquiry"} <ArrowRight className="h-4 w-4" />
+        </button>
+      </div>
+    </form>
+  );
+}
+
 function Experiences() {
   return (
     <>
