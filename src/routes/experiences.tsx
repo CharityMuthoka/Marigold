@@ -3,6 +3,7 @@ import { useMemo, useState } from "react";
 import {
   Sparkles, Flame, Wind, Moon, Sun, Music2, Camera, Utensils,
   Flower2, Lightbulb, Wine, Mic2, ArrowRight, Clock,
+  Calendar, Users, DollarSign, Palette, Mail, Phone, User, MapPin, MessageSquare, CheckCircle2,
 } from "lucide-react";
 import garden from "@/assets/exp-garden.jpg";
 import loft from "@/assets/exp-loft.jpg";
