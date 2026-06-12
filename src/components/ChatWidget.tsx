@@ -1,141 +1,173 @@
-import { useEffect, useRef, useState } from "react";
-import { MessageCircle, Send, X, Sparkles } from "lucide-react";
+import { useState } from "react";
+import {
+  MessageCircle,
+  Send,
+  X,
+  Smile,
+  Paperclip,
+  Headset,
+} from "lucide-react";
 
-type Msg = { role: "user" | "assistant"; content: string };
-
-const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat`;
-const ANON = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string;
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
 export function ChatWidget() {
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState("");
-  const [busy, setBusy] = useState(false);
-  const [messages, setMessages] = useState<Msg[]>([
-    {
-      role: "assistant",
-      content:
-        "Hi! I'm Ember, your event concierge. Ask me about our services, pricing, or how to start planning your celebration ✨",
-    },
-  ]);
-  const scrollRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
-  }, [messages, open]);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
 
-  async function send() {
-    const text = input.trim();
-    if (!text || busy) return;
-    const next: Msg[] = [...messages, { role: "user", content: text }];
-    setMessages(next);
+const emojis = ["😊", "😍", "🎉", "✨", "💐", "🥂", "❤️", "👍"];
+
+  const sendToWhatsApp = (customMessage?: string) => {
+    const message =
+      customMessage ||
+      input.trim() ||
+      "Hello Marigold & Ember, I would like to ask about event planning.";
+
+    const url = `${API_URL}/api/book-call?message=${encodeURIComponent(
+      message
+    )}`;
+
+    window.open(url, "_blank", "noopener,noreferrer");
     setInput("");
-    setBusy(true);
-
-    try {
-      const resp = await fetch(CHAT_URL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${ANON}`,
-        },
-        body: JSON.stringify({ messages: next }),
-      });
-      if (resp.status === 429) throw new Error("Too many requests — please wait a moment.");
-      if (resp.status === 402) throw new Error("AI credits required. Please add credits to continue.");
-      if (!resp.ok || !resp.body) throw new Error("Couldn't reach the assistant.");
-
-      const reader = resp.body.getReader();
-      const decoder = new TextDecoder();
-      let buffer = "";
-      let acc = "";
-      setMessages((m) => [...m, { role: "assistant", content: "" }]);
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        buffer += decoder.decode(value, { stream: true });
-        let idx: number;
-        while ((idx = buffer.indexOf("\n")) !== -1) {
-          let line = buffer.slice(0, idx);
-          buffer = buffer.slice(idx + 1);
-          if (line.endsWith("\r")) line = line.slice(0, -1);
-          if (!line.startsWith("data: ")) continue;
-          const json = line.slice(6).trim();
-          if (json === "[DONE]") break;
-          try {
-            const parsed = JSON.parse(json);
-            const delta = parsed.choices?.[0]?.delta?.content as string | undefined;
-            if (delta) {
-              acc += delta;
-              setMessages((m) => {
-                const copy = [...m];
-                copy[copy.length - 1] = { role: "assistant", content: acc };
-                return copy;
-              });
-            }
-          } catch {
-            buffer = line + "\n" + buffer;
-            break;
-          }
-        }
-      }
-    } catch (e) {
-      setMessages((m) => [
-        ...m,
-        { role: "assistant", content: e instanceof Error ? e.message : "Something went wrong." },
-      ]);
-    } finally {
-      setBusy(false);
-    }
-  }
+  };
 
   return (
     <>
       <button
-        onClick={() => setOpen((v) => !v)}
-        className="fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-gradient-sunset text-primary-foreground shadow-glow transition-transform hover:scale-110"
+        onClick={() => setOpen((value) => !value)}
+        className="fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-blue-700 text-primary-foreground shadow-glow transition-transform hover:scale-110"
         aria-label="Open chat"
       >
         {open ? <X /> : <MessageCircle />}
       </button>
 
       {open && (
-        <div className="fixed bottom-24 right-4 z-50 flex h-[32rem] w-[min(24rem,calc(100vw-2rem))] flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-glow">
-          <div className="flex items-center gap-2 border-b border-border bg-gradient-sunset px-4 py-3 text-primary-foreground">
-            <Sparkles className="h-4 w-4" />
+        <div className="fixed bottom-24 right-4 z-50 flex w-[min(24rem,calc(100vw-2rem))] flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-glow">          <div className="flex items-start justify-between bg-white px-5 py-4 text-foreground">
             <div>
-              <p className="font-display text-lg leading-none">Ember</p>
-              <p className="text-xs opacity-90">Your event concierge</p>
-            </div>
-          </div>
-          <div ref={scrollRef} className="flex-1 space-y-3 overflow-y-auto px-4 py-4">
-            {messages.map((m, i) => (
-              <div
-                key={i}
-                className={`max-w-[85%] rounded-2xl px-3 py-2 text-sm ${
-                  m.role === "user"
-                    ? "ml-auto bg-primary text-primary-foreground"
-                    : "bg-muted text-foreground"
-                }`}
-              >
-                {m.content || <span className="opacity-50">…</span>}
+              <h3 className="text-2xl font-semibold leading-none">
+                Let&apos;s Chat!
+              </h3>
+
+              <div className="mt-2 flex items-center gap-2 text-sm text-muted-foreground">
+                <span className="h-2.5 w-2.5 rounded-full bg-green-500" />
+                <span>Online</span>
               </div>
-            ))}
+            </div>
+
+            <button
+              onClick={() => setOpen(false)}
+              className="rounded-full p-1 transition-colors hover:bg-muted"
+              aria-label="Close chat"
+            >
+              <X className="h-5 w-5" />
+            </button>
           </div>
-          <div className="flex items-center gap-2 border-t border-border bg-background p-3">
+
+   
+
+          <div className="h-[17rem] overflow-y-auto bg-blue-700 px-5 py-5">
+            
+
+            <div className="flex items-end gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-xs font-semibold text-foreground shadow-sm">
+                M&E
+              </div>
+
+              <div className="max-w-[80%] rounded-xl bg-black/90 px-3 py-2 text-sm leading-relaxed text-white shadow-soft">
+                <p className="mb-1 text-xs font-semibold text-white/70">
+                  Marigold & Ember
+                </p>
+                <p>
+                  Hi there 👋 Welcome to Marigold & Ember. Tell us your event
+                  type, date, location, guest count, and budget.
+                </p>
+              </div>
+            </div>
+
+{/*
+            <div className="mt-5 space-y-2">
+              <button
+                onClick={() =>
+                  sendToWhatsApp(
+                    "Hello Marigold & Ember, I would like to get a quote for my event."
+                  )
+                }
+                className="rounded-full bg-white/90 px-4 py-2 text-xs font-medium text-foreground shadow-sm transition-transform hover:scale-[1.02]"
+              >
+                Get a quote
+              </button>
+
+              <button
+                onClick={() =>
+                  sendToWhatsApp(
+                    "Hello Marigold & Ember, I would like to check your availability for an upcoming event."
+                  )
+                }
+                className="ml-2 rounded-full bg-white/90 px-4 py-2 text-xs font-medium text-foreground shadow-sm transition-transform hover:scale-[1.02]"
+              >
+                Check availability
+              </button>
+            </div>
+            */}
+          </div>
+
+          {showEmojiPicker && (
+  <div className="border-t border-border bg-white px-4 py-3">
+    <div className="flex flex-wrap gap-2">
+      {emojis.map((emoji) => (
+        <button
+          key={emoji}
+          type="button"
+          onClick={() => {
+            setInput((current) => current + emoji);
+            setShowEmojiPicker(false);
+          }}
+          className="flex h-9 w-9 items-center justify-center rounded-full bg-muted text-lg transition-colors hover:bg-background"
+        >
+          {emoji}
+        </button>
+      ))}
+    </div>
+  </div>
+)}
+
+          <div className="flex items-center gap-2 border-t border-border bg-white px-4 py-3">
             <input
               value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && send()}
-              placeholder="Ask about weddings, pricing…"
-              className="flex-1 rounded-full border border-input bg-background px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-ring"
-              disabled={busy}
+              onChange={(event) => setInput(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === "Enter") sendToWhatsApp();
+              }}
+              placeholder="Write your message..."
+              className="flex-1 bg-transparent text-sm outline-none"
             />
+
+<button
+  type="button"
+  onClick={() => setShowEmojiPicker((value) => !value)}
+  className="text-muted-foreground transition-colors hover:text-foreground"
+  aria-label="Emoji"
+>
+  <Smile className="h-5 w-5" />
+</button>
+
+{/*
             <button
-              onClick={send}
-              disabled={busy || !input.trim()}
-              className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-sunset text-primary-foreground disabled:opacity-50"
-              aria-label="Send"
+              type="button"
+              className="text-muted-foreground transition-colors hover:text-foreground"
+              aria-label="Attach file"
+            >
+              <Paperclip className="h-5 w-5" />
+            </button>
+
+            */}
+
+            <button
+              onClick={() => sendToWhatsApp()}
+              disabled={!input.trim()}
+              className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-700 text-primary-foreground disabled:opacity-40"
+              aria-label="Send message"
             >
               <Send className="h-4 w-4" />
             </button>

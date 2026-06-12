@@ -95,7 +95,7 @@ function VibeFinder() {
 
   return (
     <div className="rounded-3xl border border-border bg-card p-8 shadow-soft md:p-12">
-      <div className="flex items-center gap-2 text-xs uppercase tracking-[0.25em] text-muted-foreground">
+      <div className="flex items-center gap-2 text-sm uppercase tracking-[0.25em] text-muted-foreground">
         <Sparkles className="h-3 w-3" /> Vibe Finder · {done ? "Complete" : `${step + 1} of ${quiz.length}`}
       </div>
 
@@ -113,7 +113,7 @@ function VibeFinder() {
                 }}
                 className="group flex flex-col items-start gap-4 rounded-2xl border border-border bg-background p-6 text-left transition-all hover:-translate-y-1 hover:border-accent hover:shadow-glow"
               >
-                <span className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-sunset text-primary-foreground">
+                <span className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-blue-700 text-primary-foreground">
                   <opt.icon className="h-5 w-5" />
                 </span>
                 <span className="font-display text-xl">{opt.label}</span>
@@ -122,7 +122,7 @@ function VibeFinder() {
           </div>
           <div className="mt-6 flex gap-1.5">
             {quiz.map((_, i) => (
-              <div key={i} className={`h-1 flex-1 rounded-full ${i <= step ? "bg-gradient-sunset" : "bg-border"}`} />
+              <div key={i} className={`h-1 flex-1 rounded-full ${i <= step ? "bg-blue-700" : "bg-border"}`} />
             ))}
           </div>
         </div>
@@ -141,7 +141,7 @@ function VibeFinder() {
               ))}
             </div>
             <div className="mt-8 flex flex-wrap gap-3">
-              <Link to="/contact" className="inline-flex items-center gap-2 rounded-full bg-gradient-sunset px-5 py-2.5 text-sm font-medium text-primary-foreground shadow-glow">
+              <Link to="/contact" className="inline-flex items-center gap-2 rounded-full bg-blue-700 px-5 py-2.5 text-sm font-medium text-primary-foreground shadow-glow">
                 Book this vibe <ArrowRight className="h-4 w-4" />
               </Link>
               <button onClick={() => setAnswers([null, null, null])} className="rounded-full border border-border bg-background px-5 py-2.5 text-sm font-medium hover:bg-muted">
@@ -169,7 +169,7 @@ function Estimator() {
   const low = Math.round((guests * tierMultiplier + addonCost) * 0.92);
   const high = Math.round((guests * tierMultiplier + addonCost) * 1.18);
 
-  const fmt = (n: number) => "$" + n.toLocaleString();
+  const fmt = (n: number) => `KSh ${n.toLocaleString()}`;
 
   const addonList = [
     { id: "florals", label: "Full florals", icon: Flower2 },
@@ -206,7 +206,7 @@ function Estimator() {
               {(["essentials", "signature", "couture"] as const).map((t) => (
                 <button key={t} onClick={() => setTier(t)}
                   className={`rounded-xl border px-3 py-2.5 text-sm capitalize transition-all ${
-                    tier === t ? "border-accent bg-gradient-sunset text-primary-foreground" : "border-border bg-background hover:bg-muted"
+                    tier === t ? "border-accent bg-blue-700 text-primary-foreground" : "border-border bg-background hover:bg-muted"
                   }`}>
                   {t}
                 </button>
@@ -233,7 +233,7 @@ function Estimator() {
           </div>
         </div>
 
-        <div className="flex flex-col justify-center bg-gradient-sunset p-8 text-primary-foreground md:p-12">
+        <div className="flex flex-col justify-center bg-blue-700 p-8 text-primary-foreground md:p-12">
           <p className="text-xs uppercase tracking-[0.25em] opacity-80">Estimated production budget</p>
           <p className="mt-3 font-display text-5xl leading-none md:text-6xl">{fmt(low)}</p>
           <p className="mt-1 text-sm opacity-90">to {fmt(high)} all-in</p>
@@ -293,7 +293,7 @@ const initialInquiry: InquiryData = {
 };
 
 const eventTypes = ["Wedding", "Corporate", "Private celebration", "Launch / brand", "Destination", "Other"];
-const budgets = ["Under $25k", "$25k – $50k", "$50k – $100k", "$100k – $250k", "$250k+"];
+const budgets = ["Under KSH 25k", "25k – KSH 50k", "KSH 50k – KSH 100k", "KSH 100k – KSH 250k", "KSH 250k+"];
 const guestRanges = ["Under 25", "25 – 75", "75 – 150", "150 – 300", "300+"];
 const styles = [
   "Golden Hour Garden", "Velvet Loft Gala", "Desert Dusk Dinner",
@@ -305,6 +305,7 @@ function InquiryForm() {
   const [errors, setErrors] = useState<Partial<Record<keyof InquiryData, string>>>({});
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [formError, setFormError] = useState("");
 
   const update = <K extends keyof InquiryData>(k: K, v: InquiryData[K]) => {
     setData((d) => ({ ...d, [k]: v }));
@@ -331,20 +332,54 @@ function InquiryForm() {
     return Object.keys(e).length === 0;
   };
 
-  const handleSubmit = async (ev: React.FormEvent) => {
+  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+
+  {formError && (
+    <p className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-600">
+      {formError}
+    </p>
+  )}
+
+  const handleSubmit = async (ev: React.FormEvent<HTMLFormElement>) => {
     ev.preventDefault();
+  
     if (!validate()) return;
+  
     setSubmitting(true);
-    // Simulate submission — wire to backend later
-    await new Promise((r) => setTimeout(r, 700));
-    setSubmitting(false);
-    setSubmitted(true);
+    setFormError("");
+  
+    try {
+      const response = await fetch(`${API_URL}/api/send-detailed-inquiry`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+  
+      const result = await response.json();
+  
+      if (!response.ok || !result.success) {
+        throw new Error(result.message || "Unable to send inquiry.");
+      }
+  
+      setSubmitted(true);
+      setData(initialInquiry);
+    } catch (error) {
+      setFormError(
+        error instanceof Error
+          ? error.message
+          : "Something went wrong. Please try again."
+      );
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   if (submitted) {
     return (
       <div className="rounded-3xl border border-border bg-card p-10 text-center shadow-soft md:p-16">
-        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-gradient-sunset shadow-glow">
+        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-blue-700 shadow-glow">
           <CheckCircle2 className="h-8 w-8 text-primary-foreground" />
         </div>
         <h3 className="mt-6 font-display text-4xl">Thank you, {data.name.split(" ")[0]}.</h3>
@@ -366,7 +401,7 @@ function InquiryForm() {
   const errCls = "mt-1.5 text-xs text-destructive";
   const chip = (active: boolean) =>
     `rounded-full border px-4 py-2 text-sm transition-all ${
-      active ? "border-accent bg-gradient-sunset text-primary-foreground shadow-glow" : "border-border bg-background hover:bg-muted"
+      active ? "border-accent bg-blue-700 text-primary-foreground shadow-glow" : "border-border bg-background hover:bg-muted"
     }`;
 
   return (
@@ -476,7 +511,7 @@ function InquiryForm() {
       <div className="mt-10 flex flex-col items-start justify-between gap-4 border-t border-border pt-8 md:flex-row md:items-center">
         <p className="text-xs text-muted-foreground">We reply within one business day. Inquiries are confidential.</p>
         <button type="submit" disabled={submitting}
-          className="inline-flex items-center gap-2 rounded-full bg-gradient-sunset px-7 py-3.5 text-sm font-medium text-primary-foreground shadow-glow transition-opacity disabled:opacity-60">
+          className="inline-flex items-center gap-2 rounded-full bg-blue-700 px-7 py-3.5 text-sm font-medium text-primary-foreground shadow-glow transition-opacity disabled:opacity-60">
           {submitting ? "Sending…" : "Send inquiry"} <ArrowRight className="h-4 w-4" />
         </button>
       </div>
@@ -489,11 +524,11 @@ function Experiences() {
     <>
       {/* Hero */}
       <section className="mx-auto max-w-7xl px-6 pb-12 pt-20 md:pt-28">
-        <p className="text-xs uppercase tracking-[0.25em] text-muted-foreground">Signature experiences</p>
+        <p className="text-sm uppercase tracking-[0.25em] text-muted-foreground">Signature experiences</p>
         <h1 className="mt-3 max-w-4xl font-display text-5xl leading-[1.05] md:text-7xl">
-          Three worlds we know <span className="text-gradient-sunset italic">by heart</span>.
+          Three worlds we know <span className="text-blue-700 italic">by heart</span>.
         </h1>
-        <p className="mt-6 max-w-2xl text-lg text-foreground/80">
+        <p className="mt-6 max-w-2xl text-xl text-foreground/80">
           Every event we make is custom — but most begin as a variation on one of these three rooms. Tour them, then build your own.
         </p>
       </section>
@@ -508,12 +543,12 @@ function Experiences() {
                   className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" />
                 <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-background/90 to-transparent" />
                 <div className="absolute bottom-5 left-5 right-5">
-                  <p className="text-xs uppercase tracking-[0.25em] text-foreground/80">{w.tag}</p>
+                  <p className="text-sm uppercase tracking-[0.25em] text-foreground/80">{w.tag}</p>
                   <h3 className="mt-1 font-display text-3xl">{w.name}</h3>
                 </div>
               </div>
               <div className="p-6">
-                <p className="text-sm text-muted-foreground">{w.blurb}</p>
+                <p className="text-lg text-muted-foreground">{w.blurb}</p>
                 <div className="mt-4 flex gap-1.5">
                   {w.palette.map((c) => (
                     <span key={c} className="h-6 w-6 rounded-full border border-border" style={{ backgroundColor: c }} />
@@ -528,7 +563,7 @@ function Experiences() {
       {/* Vibe finder */}
       <section className="mx-auto max-w-7xl px-6 py-24">
         <div className="mb-10 max-w-2xl">
-          <p className="text-xs uppercase tracking-[0.25em] text-muted-foreground">Interactive</p>
+          <p className="text-sm uppercase tracking-[0.25em] text-muted-foreground">Interactive</p>
           <h2 className="mt-2 font-display text-4xl md:text-5xl">Find your vibe in three questions.</h2>
         </div>
         <VibeFinder />
@@ -539,73 +574,10 @@ function Experiences() {
         <Estimator />
       </section>
 
-      {/* Day-of timeline */}
-      <section className="bg-muted/40 py-24">
-        <div className="mx-auto max-w-7xl px-6">
-          <div className="mb-10 flex items-end justify-between gap-6">
-            <div className="max-w-xl">
-              <p className="text-xs uppercase tracking-[0.25em] text-muted-foreground">A day with us</p>
-              <h2 className="mt-2 font-display text-4xl md:text-5xl">An hour-by-hour preview.</h2>
-            </div>
-            <p className="hidden max-w-sm text-sm text-muted-foreground md:block">
-              A representative day-of timeline. We rebuild it from scratch for every client.
-            </p>
-          </div>
-          <ol className="relative mx-auto max-w-3xl border-l-2 border-accent/40">
-            {timeline.map((t) => (
-              <li key={t.time} className="group relative pb-10 pl-10 last:pb-0">
-                <span className="absolute -left-[11px] top-1 flex h-5 w-5 items-center justify-center rounded-full bg-gradient-sunset shadow-glow">
-                  <Clock className="h-3 w-3 text-primary-foreground" />
-                </span>
-                <div className="flex flex-wrap items-baseline gap-4">
-                  <span className="font-display text-3xl text-gradient-sunset">{t.time}</span>
-                  <h3 className="font-display text-xl">{t.title}</h3>
-                </div>
-                <p className="mt-2 text-sm text-muted-foreground">{t.desc}</p>
-              </li>
-            ))}
-          </ol>
-        </div>
-      </section>
+    
 
-      {/* Signature touches */}
-      <section className="mx-auto max-w-7xl px-6 py-24">
-        <div className="mb-10 max-w-2xl">
-          <p className="text-xs uppercase tracking-[0.25em] text-muted-foreground">The small things</p>
-          <h2 className="mt-2 font-display text-4xl md:text-5xl">Eight touches that come standard.</h2>
-          <p className="mt-3 text-foreground/70">The details guests still talk about a year later — included with every signature event.</p>
-        </div>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          {touches.map((t, i) => (
-            <div key={t} className="group rounded-2xl border border-border bg-card p-6 transition-all hover:-translate-y-1 hover:shadow-glow">
-              <span className="font-display text-3xl text-gradient-sunset">{String(i + 1).padStart(2, "0")}</span>
-              <p className="mt-3 text-sm text-foreground/80">{t}</p>
-            </div>
-          ))}
-        </div>
-      </section>
 
-      {/* Inquiry form */}
-      <section id="inquiry" className="mx-auto max-w-5xl px-6 pb-24 pt-4 scroll-mt-24">
-        <div className="mb-10 max-w-2xl">
-          <p className="text-xs uppercase tracking-[0.25em] text-muted-foreground">Begin</p>
-          <h2 className="mt-2 font-display text-4xl md:text-5xl">Tell us about your event.</h2>
-          <p className="mt-3 text-foreground/70">A few details so we can prepare a thoughtful, specific reply — not a template.</p>
-        </div>
-        <InquiryForm />
-      </section>
-
-      {/* CTA */}
-      <section className="mx-auto max-w-7xl px-6 pb-24">
-        <div className="overflow-hidden rounded-3xl bg-gradient-sunset p-10 md:p-16">
-          <h2 className="max-w-2xl font-display text-4xl text-primary-foreground md:text-5xl">
-            Ready to make one of these — or something we haven't built yet?
-          </h2>
-          <a href="#inquiry" className="mt-8 inline-flex items-center gap-2 rounded-full bg-background px-6 py-3 text-sm font-medium text-foreground hover:bg-background/90">
-            Start your event <ArrowRight className="h-4 w-4" />
-          </a>
-        </div>
-      </section>
+      
     </>
   );
 }

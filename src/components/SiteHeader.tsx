@@ -14,8 +14,8 @@ export function SiteHeader() {
   return (
     <header className="sticky top-0 z-40 border-b border-border/60 bg-background/80 backdrop-blur-xl">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
-        <Link to="/" className="font-display text-2xl tracking-tight">
-          Marigold <span className="text-gradient-sunset">&amp; Ember</span>
+        <Link to="/" className="font-display text-2xl tracking-tight text-blue-700">
+          Marigold &amp; Ember
         </Link>
         <nav className="hidden gap-8 md:flex">
           {nav.map((n) => (
@@ -30,12 +30,15 @@ export function SiteHeader() {
             </Link>
           ))}
         </nav>
-        <Link
-          to="/contact"
-          className="hidden rounded-full bg-gradient-sunset px-5 py-2 text-sm font-medium text-primary-foreground shadow-soft transition-transform hover:scale-105 md:inline-block"
-        >
-          Book a call
-        </Link>
+       
+        <a
+  href="http://localhost:5000/api/book-call"
+  target="_blank"
+  rel="noopener noreferrer"
+  className="hidden rounded-full bg-blue-700 px-5 py-2 text-sm font-medium text-primary-foreground shadow-soft transition-transform hover:scale-105 md:inline-block"
+>
+  Book a call
+</a>
         <button onClick={() => setOpen((v) => !v)} className="md:hidden" aria-label="Menu">
           {open ? <X /> : <Menu />}
         </button>
