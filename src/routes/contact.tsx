@@ -43,6 +43,8 @@ const handleInquirySubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     message: formData.get("message"),
   };
 
+  
+
   try {
     const response = await fetch(`${API_URL}/api/send-inquiry`, {
       method: "POST",
