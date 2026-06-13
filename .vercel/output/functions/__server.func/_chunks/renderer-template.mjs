@@ -1,0 +1,11 @@
+import { b as HTTPResponse } from "../_libs/h3.mjs";
+import "../_libs/rou3.mjs";
+import "../_libs/srvx.mjs";
+import "node:stream";
+const rendererTemplate = () => new HTTPResponse('<!doctype html>\r\n<html lang="en">\r\n  <head>\r\n    <meta charset="UTF-8" />\r\n    <meta name="viewport" content="width=device-width, initial-scale=1.0" />\r\n\r\n    <title>Marigold & Ember | Event Planning & Design in Kenya</title>\r\n\r\n    <meta\r\n      name="description"\r\n      content="Marigold & Ember is a boutique event planning and design studio in Kenya, creating elegant weddings, corporate events, private celebrations, and brand activations."\r\n    />\r\n\r\n    <meta\r\n      name="keywords"\r\n      content="event planner Kenya, wedding planner Nairobi, event planning company Kenya, corporate event planner Kenya, event design Kenya, brand activations Kenya, private celebrations Nairobi"\r\n    />\r\n\r\n    <meta name="author" content="Marigold & Ember" />\r\n\r\n    <meta\r\n      property="og:title"\r\n      content="Marigold & Ember | Event Planning & Design in Kenya"\r\n    />\r\n\r\n    <meta\r\n      property="og:description"\r\n      content="Elegant weddings, private celebrations, corporate events, and brand activations, beautifully planned and smoothly managed across Kenya."\r\n    />\r\n\r\n    <meta property="og:type" content="website" />\r\n    <meta property="og:url" content="https://yourdomain.com" />\r\n    <meta property="og:image" content="https://yourdomain.com/preview.jpg" />\r\n\r\n    <meta name="twitter:card" content="summary_large_image" />\r\n\r\n    <meta\r\n      name="twitter:title"\r\n      content="Marigold & Ember | Event Planning & Design in Kenya"\r\n    />\r\n\r\n    <meta\r\n      name="twitter:description"\r\n      content="Boutique event planning and design for weddings, corporate events, private celebrations, and brand activations in Kenya."\r\n    />\r\n\r\n    <meta name="twitter:image" content="https://yourdomain.com/preview.jpg" />\r\n  </head>\r\n\r\n  <body>\r\n    <div id="root"></div>\r\n    <script type="module" src="/src/main.tsx"><\/script>\r\n  </body>\r\n</html>', { headers: { "content-type": "text/html; charset=utf-8" } });
+function renderIndexHTML(event) {
+  return rendererTemplate(event.req);
+}
+export {
+  renderIndexHTML as default
+};
