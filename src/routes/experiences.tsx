@@ -332,7 +332,7 @@ function InquiryForm() {
     return Object.keys(e).length === 0;
   };
 
-  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+  const API_URL = import.meta.env.VITE_API_URL || "";
 
   {formError && (
     <p className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-600">
